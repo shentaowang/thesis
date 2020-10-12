@@ -1,0 +1,15 @@
+{
+    "root":"/home/sdb/wangshentao/myspace/thesis/data",
+    "train":
+    {
+        "visdrone":"./data/visdrone_2019_mot.trainc6"
+    },
+    "test_emb":
+    {
+        "visdrone":"./data/visdrone_2019_mot.valc6"
+    },
+    "test":
+    {
+        "visdrone":"./data/visdrone_2019_mot.valc6"
+    }
+}
