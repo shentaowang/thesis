@@ -143,7 +143,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/1010-fcos-dla34v3/model_20.pth'
+    opt.load_model = '../exp/mot/1018-fcos-litedla-weight/model_30.pth'
     opt.arch = 'dlav3_34'
     opt.conf_thres = 0.30
     opt.nms_thres = 0.4
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_0903_nms0.4_conf0.3',
+         exp_name='fcos_dlav3_1018_nms0.4_conf0.3',
          show_image=False,
-         save_images=True,
+         save_images=False,
          save_videos=False)

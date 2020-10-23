@@ -141,7 +141,6 @@ class LoadImagesAndLabels:  # for training
 
         self.label_files = [x.replace('images', 'labels_with_ids').replace('.png', '.txt').replace('.jpg', '.txt')
                             for x in self.img_files]
-
         self.nF = len(self.img_files)  # number of image files
         self.width = img_size[0]
         self.height = img_size[1]
@@ -348,7 +347,7 @@ def collate_fn(batch):
 
 
 class JointDataset(LoadImagesAndLabels):  # for training
-    default_resolution = [1088, 608]
+    default_resolution = [512, 320]
     mean = None
     std = None
 
@@ -370,6 +369,7 @@ class JointDataset(LoadImagesAndLabels):  # for training
             self.label_files[ds] = [
                 x.replace('images', 'labels_with_ids').replace('.png', '.txt').replace('.jpg', '.txt')
                 for x in self.img_files[ds]]
+            # print(self.label_files[ds][0])
 
         for ds, label_paths in self.label_files.items():
             max_index = -1
@@ -435,7 +435,7 @@ class JointDataset(LoadImagesAndLabels):  # for training
         pos_idx = np.zeros((output_h*output_w, ), dtype=np.int64)
         reg_mask = np.zeros((self.max_objs, ), dtype=np.uint8)
         ids = np.zeros((self.max_objs, ), dtype=np.int64)
-
+        # print(output_h, output_w)
         for k in range(num_objs):
             label = labels[k]
             bbox = label[2:]
@@ -469,21 +469,21 @@ class JointDataset(LoadImagesAndLabels):  # for training
                 ind[k] = ct_int[1] // self.opt.down_ratio * output_w + ct_int[0] // self.opt.down_ratio
                 reg_mask[k] = 1
                 ids[k] = label[1]
-        # plt.figure(1)
+        # plt.figure()
         # tmp = imgs.permute(1, 2, 0).numpy() * 255
         # tmp = tmp.astype(np.uint8)
         # plt.imshow(cv2.resize(tmp, (output_w, output_h)))
         # plt.title(img_path.split('/')[-1])
-        # plt.figure(2)
+        # plt.figure()
         # plt.subplot(2, 2, 1)
         # plt.imshow(hm[0, :, :].astype(np.uint8) * 255, cmap="gray")
+        # plt.title(img_path.split('/')[-1])
         # plt.subplot(2, 2, 2)
         # plt.imshow(hm[1, :, :].astype(np.uint8) * 255, cmap="gray")
         # plt.subplot(2, 2, 3)
         # plt.imshow(hm[2, :, :].astype(np.uint8) * 255, cmap="gray")
         # plt.subplot(2, 2, 4)
         # plt.imshow(hm[3, :, :].astype(np.uint8) * 255, cmap="gray")
-        # plt.title(img_path.split('/')[-1])
         # plt.show()
 
         ret = {'input': imgs, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'pos_ind': pos_idx,

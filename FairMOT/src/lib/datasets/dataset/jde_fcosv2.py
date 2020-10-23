@@ -31,8 +31,8 @@ def bubble_sort(labels):
     """
     for i in range(len(labels)):
         for j in range(len(labels)-1, i, -1):
-            area_cur = (labels[j][4]  - labels[j][2]) * (labels[j][5]  - labels[j][3])
-            area_pre = (labels[j-1][4]  - labels[j-1][2]) * (labels[j-1][5]  - labels[j-1][3])
+            area_cur = (labels[j][4] - labels[j][2]) * (labels[j][5] - labels[j][3])
+            area_pre = (labels[j-1][4] - labels[j-1][2]) * (labels[j-1][5] - labels[j-1][3])
             if area_cur > area_pre:
                 # swap make big area in front
                 tmp = labels[j].copy()
@@ -369,7 +369,7 @@ def collate_fn(batch):
 
 
 class JointDataset(LoadImagesAndLabels):  # for training
-    default_resolution = [1088, 608]
+    default_resolution = [512, 320]
     mean = None
     std = None
 
@@ -471,42 +471,58 @@ class JointDataset(LoadImagesAndLabels):  # for training
                 ct = np.array(
                     [bbox[0], bbox[1]], dtype=np.float32)
                 ct_int = ct.astype(np.int32)
-                left = ct_int[0] - self.opt.down_ratio * 1.5
-                right = ct_int[0] + self.opt.down_ratio * 1.5
-                top = ct_int[1] - self.opt.down_ratio * 1.5
-                bottom = ct_int[1] + self.opt.down_ratio * 1.5
-                for bboxj in range(left // self.opt.down_ratio, right // self.opt.down_ratio):
-                    for bboxi in range(top // self.opt.down_ratio, bottom // self.opt.down_ratio):
+                left = max(ct[0] - self.opt.down_ratio * 1.5, ct[0] - w/2)
+                left = max(0, left)
+                right = min(ct[0] + self.opt.down_ratio * 1.5, ct[0] + w/2)
+                right = min(input_w, right)
+                top = max(ct[1] - self.opt.down_ratio * 1.5, ct[1] - h/2)
+                top = max(0, top)
+                bottom = min(ct[1] + self.opt.down_ratio * 1.5, ct[1] + h/2)
+                bottom = min(input_h, bottom)
+                bbox_left = ct[0] - w/2
+                bbox_right = ct[0] + w/2
+                bbox_top = ct[1] - h/2
+                bbox_bottom = ct[1] + h/2
+                # print(input_h, input_w)
+                for bboxj in range(int(np.ceil(left / self.opt.down_ratio)), int(np.ceil(right / self.opt.down_ratio))):
+                    for bboxi in range(int(np.ceil(top / self.opt.down_ratio)),
+                                       int(np.ceil(bottom / self.opt.down_ratio))):
                         flatten_idx = output_w * bboxi + bboxj
-                        bbox_dist[flatten_idx] = bboxj * self.opt.down_ratio - left, bboxi * self.opt.down_ratio - top,\
-                                                 right - bboxj * self.opt.down_ratio, bottom - bboxi * self.opt.down_ratio
+                        bbox_dist[flatten_idx] = bboxj * self.opt.down_ratio - bbox_left,\
+                                                 bboxi * self.opt.down_ratio - bbox_top,\
+                                                 bbox_right - bboxj * self.opt.down_ratio,\
+                                                 bbox_bottom - bboxi * self.opt.down_ratio
                         pos_idx[flatten_idx] = 1
-                        left_right = [bboxj * self.opt.down_ratio - (ct[0] - w/2),
-                                      (ct[0] + w/2) - bboxj * self.opt.down_ratio]
-                        top_bottom = [bboxi * self.opt.down_ratio - (ct[1] - h/2),
-                                      (ct[1] + h/2) - bboxi * self.opt.down_ratio]
+                        left_right = [bboxj * self.opt.down_ratio - bbox_left,
+                                      bbox_right - bboxj * self.opt.down_ratio]
+                        top_bottom = [bboxi * self.opt.down_ratio - bbox_top,
+                                      bbox_bottom - bboxi * self.opt.down_ratio]
                         centerness[flatten_idx] = np.sqrt(np.min(left_right) * np.min(top_bottom) /
                                                           (np.max(left_right) * np.max(top_bottom)))
+                        # assert np.max(left_right) != 0
+                        # assert np.max(top_bottom) != 0
+                        # print(left_right)
+                        # print(top_bottom)
                         hm[cls_id][bboxi][bboxj] = 1
                 ind[k] = ct_int[1] // self.opt.down_ratio * output_w + ct_int[0] // self.opt.down_ratio
                 reg_mask[k] = 1
                 ids[k] = label[1]
-        # plt.figure(1)
-        # tmp = imgs.permute(1, 2, 0).numpy() * 255
-        # tmp = tmp.astype(np.uint8)
-        # plt.imshow(cv2.resize(tmp, (output_w, output_h)))
-        # plt.title(img_path.split('/')[-1])
-        # plt.figure(2)
-        # plt.subplot(2, 2, 1)
-        # plt.imshow(hm[0, :, :].astype(np.uint8) * 255, cmap="gray")
-        # plt.subplot(2, 2, 2)
-        # plt.imshow(hm[1, :, :].astype(np.uint8) * 255, cmap="gray")
-        # plt.subplot(2, 2, 3)
-        # plt.imshow(hm[2, :, :].astype(np.uint8) * 255, cmap="gray")
-        # plt.subplot(2, 2, 4)
-        # plt.imshow(hm[3, :, :].astype(np.uint8) * 255, cmap="gray")
-        # plt.title(img_path.split('/')[-1])
-        # plt.show()
+        plt.figure()
+        tmp = imgs.permute(1, 2, 0).numpy() * 255
+        tmp = tmp.astype(np.uint8)
+        plt.imshow(cv2.resize(tmp, (output_w, output_h)))
+        plt.title(img_path.split('/')[-1])
+        plt.figure()
+        plt.subplot(2, 2, 1)
+        plt.imshow(hm[0, :, :].astype(np.uint8) * 255, cmap="gray")
+        plt.title(img_path.split('/')[-1])
+        plt.subplot(2, 2, 2)
+        plt.imshow(hm[1, :, :].astype(np.uint8) * 255, cmap="gray")
+        plt.subplot(2, 2, 3)
+        plt.imshow(hm[2, :, :].astype(np.uint8) * 255, cmap="gray")
+        plt.subplot(2, 2, 4)
+        plt.imshow((centerness.reshape(80, -1)*255).astype(np.uint8), cmap="gray")
+        plt.show()
 
         ret = {'input': imgs, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'pos_ind': pos_idx,
                'centerness': centerness, 'bbox': bbox_dist, 'ids': ids}

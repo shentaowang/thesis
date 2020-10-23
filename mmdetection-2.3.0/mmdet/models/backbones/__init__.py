@@ -9,10 +9,12 @@ from .resnext import ResNeXt
 from .ssd_vgg import SSDVGG
 from .dla import DLA
 from .litedla import LITEDLA
+from .fpndla import FPNDLA
 from .regnet_dcn import RegNetDCN
 from .mobilenetv3 import MobileNetV3_Large
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
-    'HourglassNet', 'DetectoRS_ResNet', 'DetectoRS_ResNeXt', 'DLA', 'LITEDLA', 'RegNetDCN', 'MobileNetV3_Large'
+    'HourglassNet', 'DetectoRS_ResNet', 'DetectoRS_ResNeXt', 'DLA', 'LITEDLA', 'FPNDLA', 'RegNetDCN',
+    'MobileNetV3_Large'
 ]

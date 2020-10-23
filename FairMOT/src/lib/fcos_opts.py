@@ -71,7 +71,7 @@ class opts(object):
                              help='learning rate for batch size 32.')
     self.parser.add_argument('--lr_step', type=str, default='10, 15, 25',
                              help='drop learning rate by 10.')
-    self.parser.add_argument('--num_epochs', type=int, default=20,
+    self.parser.add_argument('--num_epochs', type=int, default=30,
                              help='total training epochs.')
     self.parser.add_argument('--batch_size', type=int, default=1,
                              help='batch size')
@@ -223,7 +223,7 @@ class opts(object):
       # if opt.reg_offset:
       #   opt.heads.update({'reg': 2})
       opt.nID = dataset.nID
-      opt.img_size = (416, 416)
+      opt.img_size = (512, 320)
     else:
       assert 0, 'task not defined!'
     print('heads', opt.heads)
@@ -231,7 +231,7 @@ class opts(object):
 
   def init(self, args=''):
     default_dataset_info = {
-      'mot': {'default_resolution': [416, 416], 'num_classes': 6,
+      'mot': {'default_resolution': [320, 512], 'num_classes': 6,
                 'mean': [0.408, 0.447, 0.470], 'std': [0.289, 0.274, 0.278],
                 'dataset': 'jde', 'nID': 14455},
     }

@@ -85,11 +85,12 @@ class MotLoss(torch.nn.Module):
                 id_loss += self.IDLoss(id_output, id_target)
                 # id_loss += self.IDLoss(id_output, id_target) + self.TriLoss(id_head, id_target)
 
-        # loss = opt.hm_weight * hm_loss + opt.wh_weight * wh_loss + opt.off_weight * off_loss + opt.id_weight * id_loss
+        loss = opt.hm_weight * hm_loss + opt.bbox_weght * bbox_loss + opt.bbox_weght * centerness_loss \
+               + opt.id_weight * id_loss
 
-        det_loss = opt.hm_weight * hm_loss + opt.bbox_weght * bbox_loss + opt.centerness_weight * centerness_loss
-
-        loss = torch.exp(-self.s_det) * det_loss + torch.exp(-self.s_id) * id_loss + (self.s_det + self.s_id)
+        # det_loss = opt.hm_weight * hm_loss + opt.bbox_weght * bbox_loss + opt.centerness_weight * centerness_loss
+        #
+        # loss = torch.exp(-self.s_det) * det_loss + torch.exp(-self.s_id) * id_loss + (self.s_det + self.s_id)
         loss *= 0.5
 
         # print(loss, hm_loss, wh_loss, off_loss, id_loss)

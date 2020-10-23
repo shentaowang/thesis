@@ -152,9 +152,9 @@ data = dict(
     test=dict(
         type='DroneDataset',
         ann_file=
-        '/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-val/instances_val2019C5.json',
+        '/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-dev/instances_dev2019C5.json',
         img_prefix=
-        '/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-val/val2019C5',
+        '/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-dev/dev2019C5',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(

@@ -255,7 +255,10 @@ class JDETracker(object):
 
         dets = self.post_process(dets, meta)
         dets = self.merge_outputs([dets])
-        dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
+        if self.opt.num_classes == 6:
+            dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
+        else:
+            dets = dets[1]
 
         remain_inds = dets[:, 4] > self.opt.conf_thres
         dets = dets[remain_inds]
@@ -413,6 +416,7 @@ class FcosJDETracker(JDETracker):
             max_per_img,
             centerness
         )
+        # print(det_bboxes.size())
 
         results = {}
         for i in range(0, self.opt.num_classes):
@@ -475,14 +479,14 @@ class FcosJDETracker(JDETracker):
             id_feature = id_feature.cpu().numpy()
 
         # vis
-        # for i in range(1, 11):
+        # for i in range(1, 6):
         #     dets_copy[i] = dets_copy[i].detach().cpu().numpy()
         #     dets_copy[i][:, :2] = transform_preds(dets_copy[i][:, :2], meta['c'], meta['s'], (meta['out_width'],
         #                                                                                      meta['out_height']))
         #     dets_copy[i][:, 2:4] = transform_preds(dets_copy[i][:,2 :4], meta['c'], meta['s'], (meta['out_width'],
         #                                                                                        meta['out_height']))
         #
-        # for label in range(1, 11):
+        # for label in range(1, 6):
         #     det = dets_copy[label]
         #     for i in range(0, det.shape[0]):
         #         bbox = det[i][0:4]
