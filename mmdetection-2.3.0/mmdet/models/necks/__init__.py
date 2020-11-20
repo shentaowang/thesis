@@ -7,8 +7,9 @@ from .nasfcos_fpn import NASFCOS_FPN
 from .pafpn import PAFPN
 from .rfp import RFP
 from .nofpn import NOFPN
+from .ufpn import UFPN
 
 __all__ = [
     'FPN', 'BFP', 'HRFPN', 'NASFPN', 'FPN_CARAFE', 'PAFPN', 'NASFCOS_FPN',
-    'RFP', 'NOFPN'
+    'RFP', 'NOFPN', 'UFPN'
 ]

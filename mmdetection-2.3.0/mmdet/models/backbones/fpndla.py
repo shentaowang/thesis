@@ -564,6 +564,8 @@ class FPNDLA(nn.Module):
 
     def forward(self, x):
         x = self.base(x)
+        # for i in x[-4:]:
+        #     print(i.shape)
         return x[-4:]
         # # x = self.dla_up(x)
         # y = []
