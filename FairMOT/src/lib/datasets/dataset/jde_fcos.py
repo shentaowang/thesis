@@ -197,8 +197,8 @@ class LoadImagesAndLabels:  # for training
             labels = np.array([])
 
         # Augment image and labels
-        # if self.augment:
-        #     img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.50, 1.20))
+        if self.augment:
+            img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.9, 1.1))
 
         plotFlag = False
         if plotFlag:
@@ -472,7 +472,7 @@ class JointDataset(LoadImagesAndLabels):  # for training
         # plt.figure()
         # tmp = imgs.permute(1, 2, 0).numpy() * 255
         # tmp = tmp.astype(np.uint8)
-        # plt.imshow(cv2.resize(tmp, (output_w, output_h)))
+        # plt.imshow(tmp)
         # plt.title(img_path.split('/')[-1])
         # plt.figure()
         # plt.subplot(2, 2, 1)

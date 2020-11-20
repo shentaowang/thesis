@@ -137,10 +137,10 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/0903-dla-default/model_last.pth'
+    opt.load_model = '../exp/mot/1119-dla-nohsv/model_last.pth'
     opt.conf_thres = 0.3
     opt.nms_thres = 0.4
 
@@ -176,13 +176,14 @@ if __name__ == '__main__':
                   uav0000009_03358_v
                   uav0000073_00600_v
                   '''
-    seqs_str = test_seqs_str
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5/')
+    seqs_str = seqs_str
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
     seqs = [seq.strip() for seq in seqs_str.split()]
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='dla0520_det0.3_nms0.4',
+         exp_name='dla1108_det0.7_nms0.4',
          show_image=False,
          save_images=False,
          save_videos=False)

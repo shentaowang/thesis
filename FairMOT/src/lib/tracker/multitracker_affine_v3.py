@@ -256,7 +256,7 @@ class JDETracker(object):
 
         dets = self.post_process(dets, meta)
         dets = self.merge_outputs([dets])
-        dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
+        # dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
 
         remain_inds = dets[:, 4] > self.opt.conf_thres
         dets = dets[remain_inds]
@@ -455,6 +455,9 @@ def affine_transform(stracks, affine_mat):
 
 
 class FcosJDETracker(JDETracker):
+    """
+    use hard threshold
+    """
     def __init__(self, opt, frame_rate=30):
         super(FcosJDETracker, self).__init__(opt, frame_rate)
 
@@ -564,7 +567,7 @@ class FcosJDETracker(JDETracker):
             # dets_copy = torch.cat([dets_copy[1], dets_copy[2], dets_copy[3], dets_copy[4], dets_copy[5]])
             # dets_copy = dets_copy.detach().cpu().numpy()
             # # only track pedestrian(1) car(4), van(5), truck(6), bus(9)
-            dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5]])
+            dets = torch.cat([dets[1], dets[3], dets[4], dets[5], dets[6]])
             # dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6],
             #                   dets[7], dets[8], dets[9], dets[10]])
             dets[:, 0] = dets[:, 0].clamp(min=0, max=inp_width - 1)
@@ -604,8 +607,11 @@ class FcosJDETracker(JDETracker):
                 tracked_stracks.append(track)
 
         """ first calculate the iou for detections and tracks"""
-        dists = matching.iou_distance(tracked_stracks, detections)
-        iou_max_avg = np.mean(np.min(dists, axis=1))
+        affine_dists = matching.iou_distance(tracked_stracks, detections)
+        if affine_dists.shape[0] == 0 or affine_dists.shape[1] == 0:
+            iou_max_avg = 0
+        else:
+            iou_max_avg = np.mean(np.min(affine_dists, axis=1))
         # print(iou_max_avg)
         # select use affine and save the last image
         if iou_max_avg > self.affine_thre:

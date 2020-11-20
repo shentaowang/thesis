@@ -249,6 +249,11 @@ class JDETracker(object):
 
             reg = output['reg'] if self.opt.reg_offset else None
             dets, inds = mot_decode(hm, wh, reg=reg, cat_spec_wh=self.opt.cat_spec_wh, K=self.opt.K)
+            remain_inds = dets[:, :, 5] != 1
+            dets = dets[remain_inds]
+            dets = dets.unsqueeze(0)
+            inds = inds[remain_inds]
+            inds = inds.unsqueeze(0)
             id_feature = _tranpose_and_gather_feat(id_feature, inds)
             id_feature = id_feature.squeeze(0)
             id_feature = id_feature.cpu().numpy()
@@ -317,7 +322,7 @@ class JDETracker(object):
         detections = [detections[i] for i in u_detection]
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state == TrackState.Tracked]
         dists = matching.iou_distance(r_tracked_stracks, detections)
-        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
+        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.6)
 
         for itracked, idet in matches:
             track = r_tracked_stracks[itracked]
@@ -386,7 +391,7 @@ class FcosJDETracker(JDETracker):
     def __init__(self, opt, frame_rate=30):
         super(FcosJDETracker, self).__init__(opt, frame_rate)
 
-    def fcos_decode(self, scores, bbox_pred, centerness, nms_pre=5000, score_thr=0.6,
+    def fcos_decode(self, scores, bbox_pred, centerness, nms_pre=5000, score_thr=0.5,
                     nms=dict(type='nms', iou_thr=0.4), max_per_img=1000):
         h, w = self.opt.output_h, self.opt.output_w
         scores = scores[0].permute(1, 2, 0).reshape(-1, self.opt.num_classes)
@@ -413,8 +418,7 @@ class FcosJDETracker(JDETracker):
             scores,
             score_thr,
             nms,
-            max_per_img,
-            centerness
+            max_per_img
         )
         # print(det_bboxes.size())
 
@@ -451,11 +455,11 @@ class FcosJDETracker(JDETracker):
             id_feature = F.normalize(id_feature, dim=1)
             id_feature = id_feature[0].permute(1, 2, 0).view(-1, self.opt.reid_dim)
             # use conf threshold
-            dets = self.fcos_decode(hm, bbox, centerness, max_per_img=self.opt.K)
+            dets = self.fcos_decode(hm, bbox, centerness, score_thr=self.det_thresh, max_per_img=self.opt.K)
             dets_copy = dets.copy()
 
             # # only track pedestrian(1) car(4), van(5), truck(6), bus(9)
-            dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5]])
+            dets = torch.cat([dets[1], dets[3], dets[4], dets[5], dets[6]])
             # dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6],
             #                   dets[7], dets[8], dets[9], dets[10]])
             dets[:, 0] = dets[:, 0].clamp(min=0, max=inp_width - 1)
@@ -542,6 +546,7 @@ class FcosJDETracker(JDETracker):
         # dists = matching.gate_cost_matrix(self.kalman_filter, dists, strack_pool, detections)
         dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.opt.embedding_thres)
+        # matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.)
 
         for itracked, idet in matches:
             track = strack_pool[itracked]

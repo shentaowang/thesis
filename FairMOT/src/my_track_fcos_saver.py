@@ -11,6 +11,7 @@ import argparse
 import motmetrics as mm
 import numpy as np
 import torch
+import pickle
 
 from tracker.multitracker_affine_v3 import JDETracker, FcosJDETracker
 from tracking_utils import visualization as vis
@@ -21,8 +22,6 @@ import datasets.dataset.jde as datasets
 
 from tracking_utils.utils import mkdir_if_missing
 from fcos_opts import opts
-
-import pickle
 
 
 def write_results(filename, results, data_type):
@@ -47,25 +46,38 @@ def write_results(filename, results, data_type):
     logger.info('save results to {}'.format(filename))
 
 
-def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30):
+def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30, iou_fout=None):
     if save_dir:
         mkdir_if_missing(save_dir)
+    print(opt.conf_thres)
     tracker = FcosJDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
     frame_id = 0
+    iou_max_avg_saver = {}
     for path, img, img0 in dataloader:
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+
         # run tracking
         timer.tic()
+        file_name = path.split('/')[-1]
+        if (int(file_name.split('.')[0]) + 1) % 2 != 0:
+            # print(int(file_name.split('.')[0]))
+            continue
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
-        online_targets = tracker.update(blob, img0)
+        online_targets, iou_max_avg = tracker.update(blob, img0)
+        iou_max_avg_saver[file_name] = iou_max_avg
+
         online_tlwhs = []
         online_ids = []
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+            # vertical = tlwh[2] / tlwh[3] > 1.6
+            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            #     online_tlwhs.append(tlwh)
+            #     online_ids.append(tid)
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
         timer.toc()
@@ -80,11 +92,12 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
         frame_id += 1
     # save results
+    pickle.dump(iou_max_avg_saver, iou_fout)
     write_results(result_filename, results, data_type)
     return frame_id, timer.average_time, timer.calls
 
 
-def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), exp_name='demo',
+def main(opt, data_root='/data/MOT16/train', label_root=None, det_root=None, seqs=('MOT16-05',), exp_name='demo',
          save_images=False, save_videos=False, show_image=True):
     logger.setLevel(logging.INFO)
     result_root = os.path.join(data_root, '..', 'results', exp_name)
@@ -96,6 +109,7 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
     n_frame = 0
     timer_avgs, timer_calls = [], []
     for seq in seqs:
+        iou_fout = open(os.path.join(label_root, seq+'.pickle'), 'wb')
         output_dir = os.path.join(data_root, '..', 'outputs', exp_name, seq) if save_images or save_videos else None
         print(output_dir)
         logger.info('start seq: {}'.format(seq))
@@ -104,7 +118,7 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
         meta_info = open(os.path.join(data_root, seq, 'seqinfo.ini')).read()
         frame_rate = int(meta_info[meta_info.find('frameRate') + 10:meta_info.find('\nseqLength')])
         nf, ta, tc = eval_seq(opt, dataloader, data_type, result_filename,
-                              save_dir=output_dir, show_image=show_image, frame_rate=frame_rate)
+                              save_dir=output_dir, show_image=show_image, frame_rate=frame_rate, iou_fout=iou_fout)
         n_frame += nf
         timer_avgs.append(ta)
         timer_calls.append(tc)
@@ -137,12 +151,12 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
     opt.load_model = '../exp/mot/1108-fcos-litedla-affine2/model_30.pth'
     opt.arch = 'dlav3_34'
-    opt.conf_thres = 0.6
+    opt.conf_thres = 0.4
     opt.nms_thres = 0.4
 
     val_seqs_str = '''
@@ -173,19 +187,26 @@ if __name__ == '__main__':
                     uav0000355_00001_v
                     uav0000370_00001_v
     """
+    # seqs_sample = '''
+    #               uav0000249_00001_v
+    #               uav0000249_02688_v
+    #               '''
     seqs_sample = '''
-                  uav0000249_00001_v
-                  uav0000249_02688_v
+                  uav0000268_05773_v
                   '''
     seqs_str = val_seqs_str
     # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
     data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    label_root = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/tracker_iou_dists_2_det0.4"
+    if not os.path.exists(label_root):
+        os.makedirs(label_root)
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,
          data_root=data_root,
+         label_root=label_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1010_affinev3_nms0.4_conf0.3',
+         exp_name='fcos_dlav3_1108_2_nms0.4_conf0.7',
          show_image=False,
          save_images=False,
          save_videos=False)

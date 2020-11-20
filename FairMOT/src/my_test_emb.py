@@ -17,10 +17,10 @@ import numpy as np
 from torchvision.transforms import transforms as T
 import torch.nn.functional as F
 from models.model import create_model, load_model
-from datasets.dataset.jde import JointDataset, collate_fn
+from datasets.dataset.jde_fcos import JointDataset, collate_fn
 from models.utils import _tranpose_and_gather_feat
 from utils.utils import xywh2xyxy, ap_per_class, bbox_iou
-from opts import opts
+from fcos_opts import opts
 from models.decode import mot_decode
 from utils.post_process import ctdet_post_process
 
@@ -28,7 +28,7 @@ from utils.post_process import ctdet_post_process
 def test_emb(
         opt,
         batch_size=16,
-        img_size=(1088, 608),
+        img_size=(512, 320),
         print_interval=40,
 ):
     data_cfg = opt.data_cfg
@@ -108,5 +108,7 @@ def test_emb(
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     opt = opts().init()
+    opt.load_model = '../exp/mot/1014-fcos-litedla-512/model_30.pth'
+    opt.arch = 'dlav3_34'
     with torch.no_grad():
         map = test_emb(opt, batch_size=4)

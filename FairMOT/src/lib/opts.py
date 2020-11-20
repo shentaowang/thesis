@@ -10,7 +10,8 @@ class opts(object):
   def __init__(self):
     self.parser = argparse.ArgumentParser()
     # basic experiment setting
-    self.parser.add_argument('task', default='mot', help='mot')
+    # self.parser.add_argument('task', default='mot', help='mot')
+    self.parser.add_argument('--task', default='mot', help='mot')
     self.parser.add_argument('--dataset', default='jde', help='jde')
     self.parser.add_argument('--exp_id', default='default')
     self.parser.add_argument('--test', action='store_true')
@@ -110,6 +111,7 @@ class opts(object):
     self.parser.add_argument('--conf_thres', type=float, default=0.3, help='confidence thresh for tracking')
     self.parser.add_argument('--det_thres', type=float, default=0.3, help='confidence thresh for detection')
     self.parser.add_argument('--nms_thres', type=float, default=0.4, help='iou thresh for nms')
+    self.parser.add_argument('--embedding_thres', type=float, default=0.4, help='threshold for embedding distance')
     self.parser.add_argument('--track_buffer', type=int, default=30, help='tracking buffer')
     self.parser.add_argument('--min-box-area', type=float, default=200, help='filter out tiny boxes')
     self.parser.add_argument('--input-video', type=str, default='../videos/MOT16-03.mp4', help='path to the input video')
@@ -220,7 +222,7 @@ class opts(object):
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
       opt.nID = dataset.nID
-      opt.img_size = (1088, 608)
+      opt.img_size = (512, 320)
     else:
       assert 0, 'task not defined!'
     print('heads', opt.heads)
@@ -228,7 +230,7 @@ class opts(object):
 
   def init(self, args=''):
     default_dataset_info = {
-      'mot': {'default_resolution': [608, 1088], 'num_classes': 6,
+      'mot': {'default_resolution': [320, 512], 'num_classes': 6,
                 'mean': [0.408, 0.447, 0.470], 'std': [0.289, 0.274, 0.278],
                 'dataset': 'jde', 'nID': 14455},
     }

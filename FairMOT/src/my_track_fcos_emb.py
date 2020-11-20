@@ -12,7 +12,7 @@ import motmetrics as mm
 import numpy as np
 import torch
 
-from tracker.multitracker_affine_v3 import JDETracker, FcosJDETracker
+from tracker.multitracker_emb import JDETracker, FcosJDETracker
 from tracking_utils import visualization as vis
 from tracking_utils.log import logger
 from tracking_utils.timer import Timer
@@ -21,8 +21,6 @@ import datasets.dataset.jde as datasets
 
 from tracking_utils.utils import mkdir_if_missing
 from fcos_opts import opts
-
-import pickle
 
 
 def write_results(filename, results, data_type):
@@ -57,6 +55,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     for path, img, img0 in dataloader:
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+
         # run tracking
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
@@ -66,6 +65,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+            # vertical = tlwh[2] / tlwh[3] > 1.6
+            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            #     online_tlwhs.append(tlwh)
+            #     online_ids.append(tid)
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
         timer.toc()
@@ -137,12 +140,12 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/1108-fcos-litedla-affine2/model_30.pth'
+    opt.load_model = '../exp/mot/1014-fcos-litedla-512/model_30.pth'
     opt.arch = 'dlav3_34'
-    opt.conf_thres = 0.6
+    opt.conf_thres = 0.30
     opt.nms_thres = 0.4
 
     val_seqs_str = '''
@@ -177,15 +180,15 @@ if __name__ == '__main__':
                   uav0000249_00001_v
                   uav0000249_02688_v
                   '''
-    seqs_str = val_seqs_str
-    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    seqs_sample_v1 = """uav0000188_00000_v"""
+    seqs_str = test_seqs_str
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1010_affinev3_nms0.4_conf0.3',
+         exp_name='fcos_dlav3_1014_nms0.4_conf0.3',
          show_image=False,
-         save_images=False,
+         save_images=True,
          save_videos=False)

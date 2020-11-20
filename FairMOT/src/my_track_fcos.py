@@ -48,6 +48,7 @@ def write_results(filename, results, data_type):
 def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30):
     if save_dir:
         mkdir_if_missing(save_dir)
+    print(opt.conf_thres)
     tracker = FcosJDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
@@ -143,9 +144,9 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/1018-fcos-litedla-weight/model_30.pth'
+    opt.load_model = '../exp/mot/1119-fcos-litedla-affine-hsv/model_30.pth'
     opt.arch = 'dlav3_34'
-    opt.conf_thres = 0.30
+    opt.conf_thres = 0.6
     opt.nms_thres = 0.4
 
     val_seqs_str = '''
@@ -182,12 +183,13 @@ if __name__ == '__main__':
                   '''
     seqs_str = test_seqs_str
     data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1018_nms0.4_conf0.3',
+         exp_name='fcos_dlav3_1108_2_nms0.4_conf0.7',
          show_image=False,
          save_images=False,
          save_videos=False)

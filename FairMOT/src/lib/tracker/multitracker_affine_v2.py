@@ -256,7 +256,7 @@ class JDETracker(object):
 
         dets = self.post_process(dets, meta)
         dets = self.merge_outputs([dets])
-        dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
+        # dets = np.concatenate([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6]])
 
         remain_inds = dets[:, 4] > self.opt.conf_thres
         dets = dets[remain_inds]
@@ -555,7 +555,7 @@ class FcosJDETracker(JDETracker):
             # dets_copy = torch.cat([dets_copy[1], dets_copy[2], dets_copy[3], dets_copy[4], dets_copy[5]])
             # dets_copy = dets_copy.detach().cpu().numpy()
             # # only track pedestrian(1) car(4), van(5), truck(6), bus(9)
-            dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5]])
+            dets = torch.cat([dets[1], dets[3], dets[4], dets[5], dets[6]])
             # dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6],
             #                   dets[7], dets[8], dets[9], dets[10]])
             dets[:, 0] = dets[:, 0].clamp(min=0, max=inp_width - 1)
