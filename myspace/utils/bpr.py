@@ -25,19 +25,19 @@ def visdrone_data(label):
 
         for line in fin.readlines():
             line = line.split(',')
-            if(int(line[5])!=label):
+            if int(line[5]) != label:
                 continue
             l = int(line[0])
             r = (l + int(line[2])-1)
             t = int(line[1])
             d = (t + int(line[3])-1)
 
-            l = l*w//org_width
-            r = r*w//org_width
-            t = t*h//org_height
-            d = d*h//org_height
+            l = l * w // org_width
+            r = r * w // org_width
+            t = t * h // org_height
+            d = d * h // org_height
             s = (r-l)*(d-t)
-            assert s>=0
+            assert s >= 0
             bboxs.append([l, r, t, d, s])
 
         img_bbox.append(bboxs)
@@ -49,7 +49,7 @@ def visdrone_data(label):
 def eval_bpr(img_bbox, img_size, ratio):
     recall_ratio = []
     for i in range(len(img_bbox)):
-        if(len(img_bbox[i])==0):
+        if len(img_bbox[i]) == 0:
             continue
         width = img_size[i][0]//ratio
         height = img_size[i][1]//ratio
@@ -58,7 +58,7 @@ def eval_bpr(img_bbox, img_size, ratio):
         for m in range(len(img_bbox[i])):
             bbox = img_bbox[i][m]
             bbox = [i//ratio for i in bbox]
-            if(hmap[bbox[2]:bbox[3], bbox[0]:bbox[1]].sum()<((bbox[3]-bbox[2])*(bbox[1]-bbox[0]))):
+            if hmap[bbox[2]:bbox[3], bbox[0]:bbox[1]].sum()<((bbox[3]-bbox[2])*(bbox[1]-bbox[0])):
                 hmap[bbox[2]:bbox[3], bbox[0]:bbox[1]]=1
                 visited[m] = 1
         # for k in range(0, width+1):
@@ -80,7 +80,7 @@ def main():
         for bbox in img_bbox:
             bbox = sorted(bbox, key=lambda x: x[4])
             sorted_bbox.append(bbox)
-        eval_bpr(img_bbox, img_size, 8)
+        eval_bpr(img_bbox, img_size, 4)
         # eval_bpr(sorted_bbox, img_size, 4)
 
 

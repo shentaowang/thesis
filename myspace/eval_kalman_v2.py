@@ -359,7 +359,7 @@ def eval_pos():
         bins[i] += 1
     plt.bar(np.arange(101), bins)
     plt.ylabel('num')
-    plt.xlabel('iou(*100)')
+    plt.xlabel('IoU*100')
     plt.show()
 
 
@@ -550,8 +550,8 @@ def test_affine():
 
 
 if __name__ == '__main__':
-    # eval_pos()
-    eval_pos_affine()
+    eval_pos()
+    # eval_pos_affine()
     # get_affine()
     # get_affine_orig()
     # test_affine()

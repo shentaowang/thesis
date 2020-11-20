@@ -173,11 +173,11 @@ if __name__ == '__main__':
     #     shutil.copy(os.path.join(root_path, 'JPEGImages', img_name),
     #                 os.path.join(root_path, 'train2014', img_name))
 
-    root_path = "/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-train"
+    root_path = "/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-dev"
     xml_dir = os.path.join(root_path, 'AnnotationsC5')
     xml_labels = os.listdir(os.path.join(root_path, 'AnnotationsC5'))
-    json_file = './instances_train2019C5.json'
+    json_file = './instances_dev2019C5.json'
     convert(xml_labels, xml_dir, json_file)
     for xml_file in xml_labels:
         img_name = xml_file[:-4] + '.jpg'
-        shutil.copy(os.path.join(root_path, 'JPEGImages', img_name), os.path.join(root_path, 'train2019C5', img_name))
+        shutil.copy(os.path.join(root_path, 'JPEGImages', img_name), os.path.join(root_path, 'dev2019C5', img_name))
