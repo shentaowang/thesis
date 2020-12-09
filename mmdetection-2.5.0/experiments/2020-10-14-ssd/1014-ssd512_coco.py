@@ -15,7 +15,7 @@ model = dict(
     bbox_head=dict(
         type='SSDHead',
         in_channels=(512, 1024, 512, 256, 256, 256, 256),
-        num_classes=80,
+        num_classes=5,
         anchor_generator=dict(
             type='SSDAnchorGenerator',
             scale_major=False,
@@ -99,39 +99,6 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type='DroneDataset',
-        times=5,
-        dataset=dict(
-            type='CocoDataset',
-            ann_file='data/coco/annotations/instances_train2017.json',
-            img_prefix='data/coco/train2017/',
-            pipeline=[
-                dict(type='LoadImageFromFile', to_float32=True),
-                dict(type='LoadAnnotations', with_bbox=True),
-                dict(
-                    type='PhotoMetricDistortion',
-                    brightness_delta=32,
-                    contrast_range=(0.5, 1.5),
-                    saturation_range=(0.5, 1.5),
-                    hue_delta=18),
-                dict(
-                    type='Expand',
-                    mean=[123.675, 116.28, 103.53],
-                    to_rgb=True,
-                    ratio_range=(1, 4)),
-                dict(
-                    type='MinIoURandomCrop',
-                    min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
-                    min_crop_size=0.3),
-                dict(type='Resize', img_scale=(300, 300), keep_ratio=False),
-                dict(
-                    type='Normalize',
-                    mean=[123.675, 116.28, 103.53],
-                    std=[1, 1, 1],
-                    to_rgb=True),
-                dict(type='RandomFlip', flip_ratio=0.5),
-                dict(type='DefaultFormatBundle'),
-                dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
-            ]),
         ann_file=
         '/home/sdb/wangshentao/myspace/thesis/data/visdrone2019/VisDrone2019-DET-train/instances_train2019C5.json',
         img_prefix=
@@ -212,7 +179,7 @@ data = dict(
         ]))
 evaluation = dict(interval=1, metric='bbox')
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
     warmup='linear',
