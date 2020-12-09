@@ -64,6 +64,24 @@ def plot_bbox_2d(img_bboxs):
     plt.show()
 
 
+def plot_bbox_2d_clip(img_bboxs):
+    bbox_h = [i[1] - i[0] for i in img_bboxs]
+    bbox_w = [i[3] - i[2] for i in img_bboxs]
+    h_min, h_max = 0, 90
+    w_min, w_max = 0, 160
+    data = np.zeros((h_max - h_min + 1, w_max - w_min + 1))
+    for i in range(len(bbox_h)):
+        bbox_h[i] = np.clip(bbox_h[i], 0, 90)
+        bbox_w[i] = np.clip(bbox_w[i], 0, 160)
+        data[bbox_h[i], bbox_w[i]] += 1
+    f, ax = plt.subplots(figsize=(6, 4))
+    cmap = sns.cubehelix_palette(start=1.5, rot=3, gamma=0.8, as_cmap=True)
+    sns.heatmap(data, linewidths=0.05, ax=ax, cmap=cmap, xticklabels=10, yticklabels=10)
+    ax.set_xlabel('width')
+    ax.set_ylabel('height')
+    plt.show()
+
+
 if __name__ == "__main__":
     img_bboxs = []
     for i in range(1, 11):
@@ -72,4 +90,4 @@ if __name__ == "__main__":
     img_bboxs_flatten = []
     for i in img_bboxs:
         img_bboxs_flatten += i
-    plot_bbox_2d(img_bboxs_flatten)
+    plot_bbox_2d_clip(img_bboxs_flatten)

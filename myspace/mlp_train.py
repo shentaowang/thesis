@@ -9,12 +9,13 @@ from sklearn.metrics import accuracy_score
 
 
 def train():
-    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/affine_label_ratio2/"
-    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/tracker_iou_dists_2/"
+    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/affine_label_surf_ratio2/"
+    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/" \
+                          "tracker_extend_iou_dists_2_det0.3/"
     X = []
     y = []
     affine_thre = 40
-    expand_dim = 100
+    expand_dim = 200
     # prepared the data
     for file in os.listdir(affine_label_dir):
         fin = open(os.path.join(affine_label_dir, file), 'rb')
@@ -63,16 +64,17 @@ def train():
     accuracy_train = accuracy_score(y, predict_y)
     print(accuracy_train)
     print("tp: {}, fn: {}, fp: {}, tn: {}".format(tp, fn, fp, tn))
-    joblib.dump(model, "mlp.pkl")
+    joblib.dump(model, "model/mlp_v2.pkl")
 
 
 def test():
-    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/affine_label_ratio2/"
-    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/tracker_iou_dists_2/"
+    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/affine_label_surf_ratio2/"
+    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/" \
+                          "tracker_extend_iou_dists_2_det0.3/"
     X = []
     y = []
     affine_thre = 40
-    expand_dim = 100
+    expand_dim = 200
     # prepared the data
     for file in os.listdir(affine_label_dir):
         fin = open(os.path.join(affine_label_dir, file), 'rb')
@@ -101,7 +103,7 @@ def test():
     print(X.shape)
     print(y.shape)
     # load the model
-    model = joblib.load("mlp.pkl")
+    model = joblib.load("model/mlp_v2.pkl")
     predict_y = model.predict(X)
     print(accuracy_score(y, predict_y))
 

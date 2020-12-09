@@ -82,7 +82,7 @@ def affine2label():
             # result = cv2.warpPerspective(image0, M, (image0.shape[1], image0.shape[0]))
             # plt.imshow(result, cmap='gray')
             # plt.show()
-        with open(os.path.join(seq_dir, affine_dir, seq + '.pickle'), 'wb') as fout:
+        with open(os.path.join(affine_dir, seq + '.pickle'), 'wb') as fout:
             pickle.dump(affine_dict, fout)
 
 
@@ -172,7 +172,7 @@ def affine2label_v2():
             #     result = cv2.warpPerspective(image0, M, (image0.shape[1], image0.shape[0]))
             #     plt.imshow(result, cmap='gray')
             #     plt.show()
-        with open(os.path.join(seq_dir, affine_dir, seq + '.pickle'), 'wb') as fout:
+        with open(os.path.join(affine_dir, seq + '.pickle'), 'wb') as fout:
             pickle.dump(affine_dict, fout)
 
 
@@ -193,8 +193,9 @@ def get_count():
 
 
 def cal_accuracy_by_dists():
-    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/affine_label_ratio2/"
-    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/tracker_iou_dists_2/"
+    affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/affine_label_surf_ratio2/"
+    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/" \
+                          "tracker_extend_iou_dists_2_det0.3/"
     # affine_label_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/affine_label_ratio2/"
     # tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/tracker_iou_dists_2/"
     affine_thre, tracker_thre, stable_cnt, unstable_cnt = 40, 0.4, 0, 0

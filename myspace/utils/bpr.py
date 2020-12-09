@@ -80,7 +80,7 @@ def main():
         for bbox in img_bbox:
             bbox = sorted(bbox, key=lambda x: x[4])
             sorted_bbox.append(bbox)
-        eval_bpr(img_bbox, img_size, 4)
+        eval_bpr(img_bbox, img_size, 1)
         # eval_bpr(sorted_bbox, img_size, 4)
 
 
