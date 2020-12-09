@@ -19,6 +19,9 @@ from .basetrack import BaseTrack, TrackState
 
 from mmdet.core import multiclass_nms, distance2bbox
 
+"""
+use threshold to judge if the dorne  move
+"""
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
@@ -562,7 +565,8 @@ class FcosJDETracker(JDETracker):
             id_feature = F.normalize(id_feature, dim=1)
             id_feature = id_feature[0].permute(1, 2, 0).view(-1, self.opt.reid_dim)
             # use conf threshold
-            dets = self.fcos_decode(hm, bbox, centerness, max_per_img=self.opt.K)
+            # dets = self.fcos_decode(hm, bbox, centerness, max_per_img=self.opt.K)
+            dets = self.fcos_decode(hm, bbox, centerness, score_thr=self.det_thresh, max_per_img=self.opt.K)
             dets_copy = dets.copy()
             # dets_copy = torch.cat([dets_copy[1], dets_copy[2], dets_copy[3], dets_copy[4], dets_copy[5]])
             # dets_copy = dets_copy.detach().cpu().numpy()

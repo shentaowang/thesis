@@ -9,6 +9,7 @@ def affine2label():
     """
     convert affine matrix to label
     use transform point by grid matrix, calculate the distance from point to transformed point
+    use orb
     :return:
     """
     root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/"
@@ -81,6 +82,96 @@ def affine2label():
             # result = cv2.warpPerspective(image0, M, (image0.shape[1], image0.shape[0]))
             # plt.imshow(result, cmap='gray')
             # plt.show()
+        with open(os.path.join(seq_dir, affine_dir, seq + '.pickle'), 'wb') as fout:
+            pickle.dump(affine_dict, fout)
+
+
+def affine2label_v2():
+    """
+    convert affine matrix to label
+    use transform point by grid matrix, calculate the distance from point to transformed point
+    use surf
+    :return:
+    """
+    root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/"
+    seq_dir = root_dir + "sequences/"
+    annotations_dir = root_dir + 'annotations/'
+    seqs_sample = '''
+                  uav0000249_00001_v
+                  uav0000249_02688_v
+                  '''
+    affine_dir = root_dir + "affine_label_surf_ratio2/"
+    if not os.path.exists(affine_dir):
+        os.makedirs(affine_dir)
+    MIN_MATCH_COUNT = 10
+    # 1088 is more accurate
+    # seqs = [seq.strip() for seq in seqs_sample.split()]
+    seqs = os.listdir(seq_dir)
+    for seq in seqs:
+        print(seq)
+        # sort the seq files
+        seq_files = os.listdir(os.path.join(seq_dir, seq))
+        seq_files = sorted(seq_files, key=lambda x: int(x[:-4]))
+        image0 = cv2.imread(os.path.join(seq_dir, seq, seq_files[0]))
+        height, width = image0.shape[0], image0.shape[1]
+        print("height: {}, width: {}".format(height, width))
+        # first load the bbox annotations
+        affine_dict = {}
+        for i in range(0, len(seq_files) - 2, 2):
+            ratio = np.min([604/width, 480/height])
+            height_resize, width_resize = int(height*ratio), int(width*ratio)
+            print(i)
+            image0 = cv2.imread(os.path.join(seq_dir, seq, seq_files[i]))
+            image1 = cv2.imread(os.path.join(seq_dir, seq, seq_files[i + 2]))
+            image0 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
+            image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+            image0_resize = cv2.resize(image0, (width_resize, height_resize))
+            image1_resize = cv2.resize(image1, (width_resize, height_resize))
+            surf = cv2.xfeatures2d.SURF_create()
+            kp0, des0 = surf.detectAndCompute(image0_resize, None)
+            kp1, des1 = surf.detectAndCompute(image1_resize, None)
+            FLANN_INDEX_KDTREE = 0
+            index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+            search_params = dict(checks=50)
+            flann = cv2.FlannBasedMatcher(index_params, search_params)
+            matches = flann.knnMatch(des0, des1, k=2)
+            good = []
+            for m, n in matches:
+                if m.distance < 0.7 * n.distance:
+                    good.append(m)
+            if len(good) > MIN_MATCH_COUNT:
+                src_pts = np.float32([kp0[m.queryIdx].pt/ratio for m in good]).reshape(-1, 1, 2)
+                dst_pts = np.float32([kp1[m.trainIdx].pt/ratio for m in good]).reshape(-1, 1, 2)
+                M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            else:
+                M = np.eye(3, 3)
+            affine_dict[seq_files[i]] = M
+            x = np.linspace(0, 639, 640)
+            y = np.linspace(0, 479, 480)
+            [x, y] = np.meshgrid(x, y)
+            x, y = x.reshape(1, -1), y.reshape(1, -1)
+            pts = np.concatenate([x, y, np.ones(x.shape)], axis=0)
+            trans_pts = np.dot(M, pts)
+            trans_pts = trans_pts/trans_pts[2, :]
+            dist = np.linalg.norm(trans_pts - pts, axis=0)
+            assert dist.shape[0] == pts.shape[1]
+            print(np.max(dist))
+            # save the mat and label
+            data = {}
+            data["M"] = M
+            data["dist"] = np.max(dist)
+            affine_dict[seq_files[i]] = data
+            # # show the affine image
+            # if np.max(dist) > 40:
+            #     plt.figure(i, figsize=(8, 4))
+            #     plt.subplot(1, 3, 1)
+            #     plt.imshow(image0, cmap='gray')
+            #     plt.subplot(1, 3, 2)
+            #     plt.imshow(image1, cmap='gray')
+            #     plt.subplot(1, 3, 3)
+            #     result = cv2.warpPerspective(image0, M, (image0.shape[1], image0.shape[0]))
+            #     plt.imshow(result, cmap='gray')
+            #     plt.show()
         with open(os.path.join(seq_dir, affine_dir, seq + '.pickle'), 'wb') as fout:
             pickle.dump(affine_dict, fout)
 
@@ -159,6 +250,7 @@ def analysis_affine_dists():
 
 if __name__ == "__main__":
     # affine2label()
+    affine2label_v2()
     # get_count()
     # analysis_affine_dists()
-    cal_accuracy_by_dists()
+    # cal_accuracy_by_dists()

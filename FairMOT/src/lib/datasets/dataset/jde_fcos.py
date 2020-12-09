@@ -347,7 +347,7 @@ def collate_fn(batch):
 
 
 class JointDataset(LoadImagesAndLabels):  # for training
-    default_resolution = [512, 320]
+    default_resolution = [576, 320]
     mean = None
     std = None
 
@@ -423,7 +423,6 @@ class JointDataset(LoadImagesAndLabels):  # for training
         for i, _ in enumerate(labels):
             if labels[i, 1] > -1:
                 labels[i, 1] += self.tid_start_index[ds]
-
         output_h = imgs.shape[1] // self.opt.down_ratio
         output_w = imgs.shape[2] // self.opt.down_ratio
         num_classes = self.num_classes

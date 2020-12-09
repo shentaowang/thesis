@@ -17,6 +17,7 @@ from utils.image import transform_preds
 from .basetrack import BaseTrack, TrackState
 
 from mmdet.core import multiclass_nms, distance2bbox
+from utils.nms_wrapper import nms_detections
 
 
 class STrack(BaseTrack):
@@ -418,7 +419,8 @@ class FcosJDETracker(JDETracker):
             scores,
             score_thr,
             nms,
-            max_per_img
+            max_per_img,
+            centerness
         )
         # print(det_bboxes.size())
 
@@ -460,6 +462,8 @@ class FcosJDETracker(JDETracker):
 
             # # only track pedestrian(1) car(4), van(5), truck(6), bus(9)
             dets = torch.cat([dets[1], dets[3], dets[4], dets[5], dets[6]])
+            # keep = dets[:, 4] > self.det_thresh * 0.5
+            # dets = dets[keep]
             # dets = torch.cat([dets[1], dets[2], dets[3], dets[4], dets[5], dets[6],
             #                   dets[7], dets[8], dets[9], dets[10]])
             dets[:, 0] = dets[:, 0].clamp(min=0, max=inp_width - 1)
@@ -467,11 +471,11 @@ class FcosJDETracker(JDETracker):
             dets[:, 2] = dets[:, 2].clamp(min=0, max=inp_width - 1)
             dets[:, 3] = dets[:, 3].clamp(min=0, max=inp_height - 1)
 
-            center_idx = (dets[:, 0:1]+dets[:, 2:3]) / (2*self.opt.down_ratio)
+            center_idx = (dets[:, 0:1] + dets[:, 2:3]) / (2 * self.opt.down_ratio)
             center_idx = center_idx.long()
-            center_idy = (dets[:, 1:2]+dets[:, 3:4]) / (2*self.opt.down_ratio)
+            center_idy = (dets[:, 1:2] + dets[:, 3:4]) / (2 * self.opt.down_ratio)
             center_idy = center_idy.long()
-            ind = center_idy*self.opt.output_w+center_idx
+            ind = center_idy * self.opt.output_w + center_idx
             id_feature = id_feature[ind]
             id_feature = id_feature.squeeze(1)
 
@@ -536,6 +540,17 @@ class FcosJDETracker(JDETracker):
             else:
                 tracked_stracks.append(track)
 
+        n_det = len(detections)
+        rois = np.array([d.tlbr for d in detections], dtype=np.float)
+        scores = np.array([d.score for d in detections], dtype=np.float)
+        if len(detections) > 0:
+            keep = nms_detections(rois, scores.reshape(-1), nms_thresh=0.8)
+            mask = np.zeros(len(rois), dtype=bool)
+            mask[keep] = True
+            keep = np.where(mask & (scores >= self.det_thresh*0.5))[0]
+            detections = [detections[i] for i in keep]
+            # print("orig_det: {}, detections:{}".format(n_det, len(detections)))
+
         ''' Step 2: First association, with embedding'''
         strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
         # Predict the current location with KF
@@ -546,7 +561,6 @@ class FcosJDETracker(JDETracker):
         # dists = matching.gate_cost_matrix(self.kalman_filter, dists, strack_pool, detections)
         dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.opt.embedding_thres)
-        # matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.)
 
         for itracked, idet in matches:
             track = strack_pool[itracked]

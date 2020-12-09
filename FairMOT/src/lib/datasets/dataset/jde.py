@@ -208,6 +208,7 @@ class LoadImagesAndLabels:  # for training
             import matplotlib.pyplot as plt
             plt.figure(figsize=(50, 50))
             plt.imshow(img[:, :, ::-1])
+            print(img.shape)
             plt.plot(labels[:, [2, 4, 4, 2, 2]].T, labels[:, [3, 3, 5, 5, 3]].T, '.-')
             plt.axis('off')
             plt.savefig('test.jpg')
@@ -348,7 +349,7 @@ def collate_fn(batch):
 
 
 class JointDataset(LoadImagesAndLabels):  # for training
-    default_resolution = [1088, 608]
+    default_resolution = [576, 320]
     mean = None
     std = None
     def __init__(self, opt, root, paths, img_size=(1088, 608), augment=False, transforms=None):

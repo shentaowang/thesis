@@ -49,6 +49,27 @@ def linear_assignment(cost_matrix, thresh):
     return matches, unmatched_a, unmatched_b
 
 
+def greedy_assignment(cost_matrix, thresh):
+    if cost_matrix.size == 0:
+        return np.empty((0, 2), dtype=int), tuple(range(cost_matrix.shape[0])), tuple(range(cost_matrix.shape[1]))
+    matches, unmatched_a, unmatched_b = [], [], []
+    unmatched_a = np.ones(cost_matrix.shape[0])
+    unmatched_b = np.ones(cost_matrix.shape[1])
+    for i in range(cost_matrix.shape[0]):
+        idx_sort = np.argsort(cost_matrix[i])
+        for idx in idx_sort:
+            if cost_matrix[i][idx] >= thresh:
+                continue
+            elif unmatched_b[idx] == 1:
+                unmatched_a[i] = 0
+                unmatched_b[idx] = 0
+                matches.append(np.array([i, idx]))
+    matches = np.array(matches)
+    unmatched_a = np.where(unmatched_a == 1)[0]
+    unmatched_b = np.where(unmatched_b == 1)[0]
+    return matches, unmatched_a, unmatched_b
+
+
 def ious(atlbrs, btlbrs):
     """
     Compute cost based on IoU

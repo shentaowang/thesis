@@ -20,7 +20,7 @@ class Evaluator(object):
     def load_annotations(self):
         assert self.data_type == 'mot'
 
-        # gt_filename = os.path.join(self.data_root, self.seq_name, 'gt', 'gt.txt')
+        # # gt_filename = os.path.join(self.data_root, self.seq_name, 'gt', 'gt.txt')
         # gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/annotations-c5/',
         #                            self.seq_name+'.txt')
         gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/annotations-c5/',

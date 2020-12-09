@@ -6,7 +6,7 @@
     },
     "test_emb":
     {
-        "visdrone":"./data/visdrone_2019_mot.valc5_d4"
+        "visdrone":"./data/visdrone_2019_mot.valc6_d4"
     },
     "test":
     {

@@ -13,7 +13,7 @@ import numpy as np
 import torch
 import pickle
 
-from tracker.multitracker_affine_v3 import JDETracker, FcosJDETracker
+from tracker.multitracker_extend_v3 import JDETracker, FcosJDETracker
 from tracking_utils import visualization as vis
 from tracking_utils.log import logger
 from tracking_utils.timer import Timer
@@ -22,6 +22,10 @@ import datasets.dataset.jde as datasets
 
 from tracking_utils.utils import mkdir_if_missing
 from fcos_opts import opts
+
+"""
+because the ratio > 1, saver mot is low
+"""
 
 
 def write_results(filename, results, data_type):
@@ -74,10 +78,6 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
-            # vertical = tlwh[2] / tlwh[3] > 1.6
-            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
-            #     online_tlwhs.append(tlwh)
-            #     online_ids.append(tid)
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
         timer.toc()
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
     opt.load_model = '../exp/mot/1108-fcos-litedla-affine2/model_30.pth'
     opt.arch = 'dlav3_34'
-    opt.conf_thres = 0.4
+    opt.conf_thres = 0.3
     opt.nms_thres = 0.4
 
     val_seqs_str = '''
@@ -194,10 +194,10 @@ if __name__ == '__main__':
     seqs_sample = '''
                   uav0000268_05773_v
                   '''
-    seqs_str = val_seqs_str
-    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
-    label_root = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/tracker_iou_dists_2_det0.4"
+    seqs_str = test_seqs_str
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    label_root = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/tracker_extend_iou_dists_2_det0.3"
     if not os.path.exists(label_root):
         os.makedirs(label_root)
     seqs = [seq.strip() for seq in seqs_str.split()]
@@ -206,7 +206,7 @@ if __name__ == '__main__':
          data_root=data_root,
          label_root=label_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1108_2_nms0.4_conf0.7',
+         exp_name='fcos_dlav3_1108_2_nms0.4_conf0.3',
          show_image=False,
          save_images=False,
          save_videos=False)

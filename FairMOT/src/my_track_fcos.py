@@ -67,7 +67,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             tlwh = t.tlwh
             tid = t.track_id
             # vertical = tlwh[2] / tlwh[3] > 1.6
-            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            # if tlwh[2] * tlwh[3] > 1:
             #     online_tlwhs.append(tlwh)
             #     online_ids.append(tid)
             online_tlwhs.append(tlwh)
@@ -144,9 +144,9 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/1119-fcos-litedla-affine-hsv/model_30.pth'
+    opt.load_model = '../exp/mot/1204-fcos-litedla-576-b8/model_30.pth'
     opt.arch = 'dlav3_34'
-    opt.conf_thres = 0.6
+    opt.conf_thres = 0.3
     opt.nms_thres = 0.4
 
     val_seqs_str = '''
@@ -178,18 +178,17 @@ if __name__ == '__main__':
                     uav0000370_00001_v
     """
     seqs_sample = '''
-                  uav0000249_00001_v
-                  uav0000249_02688_v
+                  uav0000182_00000_v
                   '''
-    seqs_str = test_seqs_str
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
-    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    seqs_str = seqs_sample
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1108_2_nms0.4_conf0.7',
+         exp_name='fcos_dlav3_1204_2_nms0.4_conf0.6_centerness',
          show_image=False,
-         save_images=False,
+         save_images=True,
          save_videos=False)

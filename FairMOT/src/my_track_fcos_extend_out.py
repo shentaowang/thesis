@@ -12,7 +12,7 @@ import motmetrics as mm
 import numpy as np
 import torch
 
-from tracker.multitracker_affine_v4 import JDETracker, FcosJDETracker
+from tracker.multitracker_extend_out import JDETracker, FcosJDETracker
 from tracking_utils import visualization as vis
 from tracking_utils.log import logger
 from tracking_utils.timer import Timer
@@ -23,7 +23,6 @@ from tracking_utils.utils import mkdir_if_missing
 from fcos_opts import opts
 
 import pickle
-
 
 
 def write_results(filename, results, data_type):
@@ -48,30 +47,73 @@ def write_results(filename, results, data_type):
     logger.info('save results to {}'.format(filename))
 
 
+def write_det_results(filename, results, data_type):
+    if data_type == 'mot':
+        save_format = '{frame},{id},{x1},{y1},{w},{h},1,-1,-1,-1,{from_det}\n'
+    elif data_type == 'kitti':
+        save_format = '{frame} {id} pedestrian 0 0 -10 {x1} {y1} {x2} {y2} -10 -10 -10 -1000 -1000 -1000 -10\n'
+    else:
+        raise ValueError(data_type)
+
+    with open(filename, 'w') as f:
+        for frame_id, tlwhs, track_ids, from_dets in results:
+            if data_type == 'kitti':
+                frame_id -= 1
+            for tlwh, track_id, from_det in zip(tlwhs, track_ids, from_dets):
+                if track_id < 0:
+                    continue
+                x1, y1, w, h = tlwh
+                x2, y2 = x1 + w, y1 + h
+                line = save_format.format(frame=frame_id, id=track_id, x1=x1, y1=y1, x2=x2, y2=y2, w=w, h=h,
+                                          from_det=from_det)
+                f.write(line)
+    logger.info('save results to {}'.format(filename))
+
+
 def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30):
+    out_dir = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/scores_base"
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     if save_dir:
         mkdir_if_missing(save_dir)
     tracker = FcosJDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
+    results_parser = []
     frame_id = 0
     for path, img, img0 in dataloader:
+        seq = path.split('/')[-2]
+        if not os.path.exists(os.path.join(out_dir, seq)):
+            os.makedirs(os.path.join(out_dir, seq))
+        out_file = path.split('/')[-1].split('.')[0]+'.pickle'
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+
         # run tracking
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
-        online_targets = tracker.update(blob, img0)
+        online_targets, out_data = tracker.update(blob, img0)
         online_tlwhs = []
         online_ids = []
+        online_from_dets = []
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+            is_frome_det = t.from_det
+            # vertical = tlwh[2] / tlwh[3] > 1.6
+            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            #     online_tlwhs.append(tlwh)
+            #     online_ids.append(tid)
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
+            if is_frome_det:
+                online_from_dets.append(1)
+            else:
+                online_from_dets.append(0)
         timer.toc()
         # save results
         results.append((frame_id + 1, online_tlwhs, online_ids))
+        results_parser.append((frame_id + 1, online_tlwhs, online_ids, online_from_dets))
         if show_image or save_dir is not None:
             online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                           fps=1. / timer.average_time)
@@ -79,9 +121,13 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imshow('online_im', online_im)
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
+        fout = open(os.path.join(out_dir, seq, out_file), 'wb')
+        pickle.dump(out_data, fout)
         frame_id += 1
     # save results
     write_results(result_filename, results, data_type)
+    result_filename_det = result_filename.replace(".txt", "_det.txt")
+    write_det_results(result_filename_det, results_parser, data_type)
     return frame_id, timer.average_time, timer.calls
 
 
@@ -138,7 +184,7 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
     opt.load_model = '../exp/mot/1108-fcos-litedla-affine2/model_30.pth'
@@ -175,8 +221,8 @@ if __name__ == '__main__':
                     uav0000370_00001_v
     """
     seqs_sample = '''
-                  uav0000249_00001_v
-                  uav0000249_02688_v
+                      uav0000086_00000_v
+                      uav0000117_02622_v
                   '''
     seqs_str = val_seqs_str
     # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
@@ -186,7 +232,7 @@ if __name__ == '__main__':
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_1108_affinev3_nms0.4_conf0.3',
+         exp_name='fcos_dlav3_extend_refine_v2_1108_nms0.4_conf0.6',
          show_image=False,
-         save_images=False,
+         save_images=True,
          save_videos=False)

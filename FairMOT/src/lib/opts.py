@@ -222,7 +222,7 @@ class opts(object):
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
       opt.nID = dataset.nID
-      opt.img_size = (512, 320)
+      opt.img_size = (576, 320)
     else:
       assert 0, 'task not defined!'
     print('heads', opt.heads)
@@ -230,7 +230,7 @@ class opts(object):
 
   def init(self, args=''):
     default_dataset_info = {
-      'mot': {'default_resolution': [320, 512], 'num_classes': 6,
+      'mot': {'default_resolution': [320, 576], 'num_classes': 6,
                 'mean': [0.408, 0.447, 0.470], 'std': [0.289, 0.274, 0.278],
                 'dataset': 'jde', 'nID': 14455},
     }

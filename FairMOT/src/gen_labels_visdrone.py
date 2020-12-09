@@ -310,6 +310,58 @@ def testC5():
     print(label_freq)
 
 
+def testC1():
+    """
+    generate the test label, align to mot competition
+    Returns:
+
+    """
+    seq_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/trainc1/'
+    label_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/labels_with_ids/trainc1'
+    annotations = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/annotations/train'
+    mkdirs(label_root)
+    seqs = [s for s in os.listdir(seq_root)]
+
+    tid_curr = 0
+    tid_last = -1
+    label_freq = {}
+    for i in range(10):
+        label_freq[i] = 0
+    for seq in seqs:
+        seq_info = open(osp.join(seq_root, seq, 'seqinfo.ini')).read()
+        seq_width = int(seq_info[seq_info.find('imWidth=') + 8:seq_info.find('\nimHeight')])
+        seq_height = int(seq_info[seq_info.find('imHeight=') + 9:seq_info.find('\nimExt')])
+        gt_txt = osp.join(annotations, seq+'.txt')
+        gt = np.loadtxt(gt_txt, dtype=np.float64, delimiter=',')
+        seq_label_root = osp.join(label_root, seq)
+        if os.path.exists(seq_label_root):
+            os.removedirs(seq_label_root)
+        mkdirs(seq_label_root)
+        for fid, tid, x, y, w, h, mark, label, _, _ in gt:
+            if int(mark) == 0 or int(label) in [0, 2, 3, 7, 8, 10, 11]:
+                # print('ignore')
+                continue
+            fid = int(fid)
+            tid = int(tid)
+            print("{}-{}".format(label, id2name[int(label)]))
+            label = 0
+            assert label >= 0
+            assert label <= 10
+            if not tid == tid_last:
+                tid_curr += 1
+                tid_last = tid
+            x += w / 2
+            y += h / 2
+            label_fpath = osp.join(seq_label_root, '{:07d}.txt'.format(fid))
+            label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
+                label, tid_curr, x / seq_width, y / seq_height, w / seq_width, h / seq_height)
+            with open(label_fpath, 'a') as f:
+                f.write(label_str)
+            label_freq[label] += 1
+
+    print(label_freq)
+
+
 def detection_train():
     """
     generate the detection train label
@@ -500,4 +552,4 @@ if __name__ == "__main__":
     # trainC6()
     # valC6()
     # gen_image_list()
-    testC5()
+    testC1()

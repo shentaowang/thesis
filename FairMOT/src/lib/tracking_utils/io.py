@@ -61,8 +61,8 @@ labels={'ped', ...			% 1
 
 
 def read_mot_results(filename, is_gt, is_ignore):
-    valid_labels = {1}
-    ignore_labels = {2, 7, 8, 12}
+    valid_labels = {1, 4, 5, 6, 9}
+    ignore_labels = {0, 2, 3, 7, 8, 10, 11}
     results_dict = dict()
     if os.path.isfile(filename):
         with open(filename, 'r') as f:
@@ -81,6 +81,10 @@ def read_mot_results(filename, is_gt, is_ignore):
                         mark = int(float(linelist[6]))
                         if mark == 0 or label not in valid_labels:
                             continue
+                    # label = int(float(linelist[7]))
+                    # mark = int(float(linelist[6]))
+                    # if mark == 0 or label not in valid_labels:
+                    #     continue
                     score = 1
                 elif is_ignore:
                     if 'MOT16-' in filename or 'MOT17-' in filename:
@@ -90,6 +94,10 @@ def read_mot_results(filename, is_gt, is_ignore):
                             continue
                     else:
                         continue
+                    # label = int(float(linelist[7]))
+                    # vis_ratio = float(linelist[8])
+                    # if label not in ignore_labels and vis_ratio >= 0:
+                    #     continue
                     score = 1
                 else:
                     score = float(linelist[6])
