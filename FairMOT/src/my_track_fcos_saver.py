@@ -57,16 +57,16 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     tracker = FcosJDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
-    frame_id = 0
+    frame_id = -1
     iou_max_avg_saver = {}
     for path, img, img0 in dataloader:
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-
+        frame_id += 1
         # run tracking
         timer.tic()
         file_name = path.split('/')[-1]
-        if (int(file_name.split('.')[0]) + 1) % 2 != 0:
+        if frame_id % 2 != 0:
             # print(int(file_name.split('.')[0]))
             continue
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
@@ -90,7 +90,6 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imshow('online_im', online_im)
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
-        frame_id += 1
     # save results
     pickle.dump(iou_max_avg_saver, iou_fout)
     write_results(result_filename, results, data_type)
@@ -154,7 +153,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
 
-    opt.load_model = '../exp/mot/1108-fcos-litedla-affine2/model_30.pth'
+    opt.load_model = '../exp/mot/1204-fcos-litedla-576-b8/model_30.pth'
     opt.arch = 'dlav3_34'
     opt.conf_thres = 0.3
     opt.nms_thres = 0.4
@@ -192,12 +191,13 @@ if __name__ == '__main__':
     #               uav0000249_02688_v
     #               '''
     seqs_sample = '''
-                  uav0000268_05773_v
+                  uav0000086_00000_v
                   '''
     seqs_str = test_seqs_str
     data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
     # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
-    label_root = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/tracker_extend_iou_dists_2_det0.3"
+    label_root = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/" \
+                 "tracker_extend_iou_dists_2_det0.3_1204_p1"
     if not os.path.exists(label_root):
         os.makedirs(label_root)
     seqs = [seq.strip() for seq in seqs_str.split()]

@@ -77,9 +77,11 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     results_parser = []
     frame_id = 0
     for path, img, img0 in dataloader:
+        frame_id += 1
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-
+        # if frame_id % 2 != 0:
+        #     continue
         # run tracking
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
@@ -99,8 +101,8 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 online_from_dets.append(0)
         timer.toc()
         # save results
-        results.append((frame_id + 1, online_tlwhs, online_ids))
-        results_parser.append((frame_id + 1, online_tlwhs, online_ids, online_from_dets))
+        results.append((frame_id, online_tlwhs, online_ids))
+        results_parser.append((frame_id, online_tlwhs, online_ids, online_from_dets))
         if show_image or save_dir is not None:
             online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                           fps=1. / timer.average_time)
@@ -108,7 +110,6 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imshow('online_im', online_im)
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
-        frame_id += 1
     # save results
     write_results(result_filename, results, data_type)
     result_filename_det = result_filename.replace(".txt", "_det.txt")
@@ -206,11 +207,11 @@ if __name__ == '__main__':
                     uav0000370_00001_v
     """
     seqs_sample = '''
-                    uav0000305_00000_v
+                    uav0000086_00000_v
                   '''
-    seqs_str = val_seqs_str
-    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    seqs_str = test_seqs_str
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,

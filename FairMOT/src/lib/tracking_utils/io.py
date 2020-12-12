@@ -73,8 +73,9 @@ def read_mot_results(filename, is_gt, is_ignore):
                 fid = int(linelist[0])
                 if fid < 1:
                     continue
+                # if fid % 2 != 0:
+                #     continue
                 results_dict.setdefault(fid, list())
-
                 if is_gt:
                     if 'MOT16-' in filename or 'MOT17-' in filename:
                         label = int(float(linelist[7]))

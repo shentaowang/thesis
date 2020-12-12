@@ -93,14 +93,14 @@ def affine2label_v2():
     use surf
     :return:
     """
-    root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/"
+    root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/"
     seq_dir = root_dir + "sequences/"
     annotations_dir = root_dir + 'annotations/'
     seqs_sample = '''
                   uav0000249_00001_v
                   uav0000249_02688_v
                   '''
-    affine_dir = root_dir + "affine_label_surf_ratio2/"
+    affine_dir = root_dir + "affine_label_surf_ratio2_p2/"
     if not os.path.exists(affine_dir):
         os.makedirs(affine_dir)
     MIN_MATCH_COUNT = 10
@@ -117,7 +117,7 @@ def affine2label_v2():
         print("height: {}, width: {}".format(height, width))
         # first load the bbox annotations
         affine_dict = {}
-        for i in range(0, len(seq_files) - 2, 2):
+        for i in range(1, len(seq_files) - 2, 2):
             ratio = np.min([604/width, 480/height])
             height_resize, width_resize = int(height*ratio), int(width*ratio)
             print(i)
@@ -237,7 +237,8 @@ def cal_accuracy_by_dists():
 
 
 def analysis_affine_dists():
-    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/tracker_iou_dists_2_det0.4/"
+    tracker_predict_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/" \
+                          "tracker_iou_dists_2_det0.4/"
     track_cnt, object_cnt = [], []
     for file in os.listdir(tracker_predict_dir):
         fin = open(os.path.join(tracker_predict_dir, file), 'rb')

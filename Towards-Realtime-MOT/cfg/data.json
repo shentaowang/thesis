@@ -2,7 +2,7 @@
     "root":"/home/sdb/wangshentao/myspace/thesis/data",
     "train":
     {
-        "visdrone":"./data/visdrone_2019_mot.trainc6"
+        "visdrone":"./data/visdrone_2019_mot.trainc1"
     },
     "test_emb":
     {
@@ -10,6 +10,6 @@
     },
     "test":
     {
-        "visdrone":"./data/visdrone_2019_mot.valc5"
+        "visdrone":"./data/visdrone_2019_mot.valc1"
     }
 }

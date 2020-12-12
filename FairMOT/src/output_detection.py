@@ -177,6 +177,7 @@ def main(
     timer_calls = np.asarray(timer_calls)
     all_time = np.dot(timer_avgs, timer_calls)
     avg_time = all_time / np.sum(timer_calls)
+    print(all_time)
     print(avg_time)
 
 
@@ -184,19 +185,39 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
     opt.load_model = '../exp/mot/1204-fcos-litedla-576-b8/model_last.pth'
-    data_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/valc5/'
-    output_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/detections-1204"
+    data_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/testc5/'
+    output_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/detections-1204"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    seqs = """
-            uav0000086_00000_v
-            uav0000117_02622_v
-            uav0000137_00458_v
-            uav0000182_00000_v
-            uav0000268_05773_v
-            uav0000305_00000_v
-            uav0000339_00001_v
+    val_seqs_str = """
+                    uav0000086_00000_v
+                    uav0000117_02622_v
+                    uav0000137_00458_v
+                    uav0000182_00000_v
+                    uav0000268_05773_v
+                    uav0000305_00000_v
+                    uav0000339_00001_v
     """
+    test_seqs_str = """
+                    uav0000009_03358_v
+                    uav0000073_00600_v
+                    uav0000073_04464_v
+                    uav0000077_00720_v
+                    uav0000088_00290_v
+                    uav0000119_02301_v
+                    uav0000120_04775_v
+                    uav0000161_00000_v
+                    uav0000188_00000_v
+                    uav0000201_00000_v
+                    uav0000249_00001_v
+                    uav0000249_02688_v
+                    uav0000297_00000_v
+                    uav0000297_02761_v
+                    uav0000306_00230_v
+                    uav0000355_00001_v
+                    uav0000370_00001_v
+    """
+    seqs = test_seqs_str
     seqs = [seq.strip() for seq in seqs.split()]
     with torch.no_grad():
         main(opt, data_root, seqs, output_dir, batch_size=1)

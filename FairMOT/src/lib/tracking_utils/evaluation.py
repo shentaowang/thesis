@@ -21,10 +21,10 @@ class Evaluator(object):
         assert self.data_type == 'mot'
 
         # # gt_filename = os.path.join(self.data_root, self.seq_name, 'gt', 'gt.txt')
-        # gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/annotations-c5/',
-        #                            self.seq_name+'.txt')
-        gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/annotations-c5/',
+        gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/annotations-c5/',
                                    self.seq_name+'.txt')
+        # gt_filename = os.path.join('/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/annotations-c5/',
+        #                            self.seq_name+'.txt')
         self.gt_frame_dict = read_results(gt_filename, self.data_type, is_gt=True)
         self.gt_ignore_frame_dict = read_results(gt_filename, self.data_type, is_ignore=True)
 

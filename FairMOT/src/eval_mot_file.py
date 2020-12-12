@@ -13,18 +13,38 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    seqs = """
-            uav0000086_00000_v
-            uav0000117_02622_v
-            uav0000137_00458_v
-            uav0000182_00000_v
-            uav0000268_05773_v
-            uav0000305_00000_v
-            uav0000339_00001_v
+    val_seqs_str = """
+                    uav0000086_00000_v
+                    uav0000117_02622_v
+                    uav0000137_00458_v
+                    uav0000182_00000_v
+                    uav0000268_05773_v
+                    uav0000305_00000_v
+                    uav0000339_00001_v
     """
+    test_seqs_str = """
+                    uav0000009_03358_v
+                    uav0000073_00600_v
+                    uav0000073_04464_v
+                    uav0000077_00720_v
+                    uav0000088_00290_v
+                    uav0000119_02301_v
+                    uav0000120_04775_v
+                    uav0000161_00000_v
+                    uav0000188_00000_v
+                    uav0000201_00000_v
+                    uav0000249_00001_v
+                    uav0000249_02688_v
+                    uav0000297_00000_v
+                    uav0000297_02761_v
+                    uav0000306_00230_v
+                    uav0000355_00001_v
+                    uav0000370_00001_v
+    """
+    seqs = test_seqs_str
     data_type = 'mot'
     seqs = [seq.strip() for seq in seqs.split()]
-    data_root = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/valc5/"
+    data_root = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/testc5/"
     out_path = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/results/kcf_tracker_1204"
     accs = []
     for seq in seqs:
