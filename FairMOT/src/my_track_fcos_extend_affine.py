@@ -80,8 +80,8 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         frame_id += 1
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-        # if frame_id % 2 != 0:
-        #     continue
+        if frame_id % 4 != 0:
+            continue
         # run tracking
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
@@ -209,15 +209,15 @@ if __name__ == '__main__':
     seqs_sample = '''
                     uav0000086_00000_v
                   '''
-    seqs_str = test_seqs_str
-    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
-    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
+    seqs_str = seqs_sample
+    # data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/testc5')
+    data_root = os.path.join(opt.data_dir, 'visdrone_2019_mot/images/valc5/')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='fcos_dlav3_extend_affine_refine_v2_1204_nms0.4_conf0.6',
+         exp_name='fcos_dlav3_extend_affine_refine_v2_1204_nms0.4_conf0.6_tmp',
          show_image=False,
          save_images=True,
          save_videos=False)

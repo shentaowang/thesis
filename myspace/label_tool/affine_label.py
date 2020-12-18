@@ -93,20 +93,17 @@ def affine2label_v2():
     use surf
     :return:
     """
-    root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/"
+    root_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/"
     seq_dir = root_dir + "sequences/"
     annotations_dir = root_dir + 'annotations/'
-    seqs_sample = '''
-                  uav0000249_00001_v
-                  uav0000249_02688_v
-                  '''
-    affine_dir = root_dir + "affine_label_surf_ratio2_p2/"
+    affine_dir = root_dir + "affine_label_surf_ratio1_p2/"
     if not os.path.exists(affine_dir):
         os.makedirs(affine_dir)
     MIN_MATCH_COUNT = 10
     # 1088 is more accurate
     # seqs = [seq.strip() for seq in seqs_sample.split()]
     seqs = os.listdir(seq_dir)
+    label1, label0 = 0, 0
     for seq in seqs:
         print(seq)
         # sort the seq files
@@ -117,12 +114,12 @@ def affine2label_v2():
         print("height: {}, width: {}".format(height, width))
         # first load the bbox annotations
         affine_dict = {}
-        for i in range(1, len(seq_files) - 2, 2):
+        for i in range(0, len(seq_files) - 1, 1):
             ratio = np.min([604/width, 480/height])
             height_resize, width_resize = int(height*ratio), int(width*ratio)
             print(i)
             image0 = cv2.imread(os.path.join(seq_dir, seq, seq_files[i]))
-            image1 = cv2.imread(os.path.join(seq_dir, seq, seq_files[i + 2]))
+            image1 = cv2.imread(os.path.join(seq_dir, seq, seq_files[i + 1]))
             image0 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
             image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
             image0_resize = cv2.resize(image0, (width_resize, height_resize))
@@ -156,6 +153,10 @@ def affine2label_v2():
             dist = np.linalg.norm(trans_pts - pts, axis=0)
             assert dist.shape[0] == pts.shape[1]
             print(np.max(dist))
+            if np.max(dist) > 10:
+                label1 += 1
+            else:
+                label0 += 1
             # save the mat and label
             data = {}
             data["M"] = M
@@ -174,6 +175,7 @@ def affine2label_v2():
             #     plt.show()
         with open(os.path.join(affine_dir, seq + '.pickle'), 'wb') as fout:
             pickle.dump(affine_dict, fout)
+    print("label 1 cnt: {}, label 0 cnt: {}".format(label1, label0))
 
 
 def get_count():

@@ -54,9 +54,11 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     results = []
     frame_id = 0
     for path, img, img0 in dataloader:
+        frame_id += 1
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-
+        if frame_id % 2 != 0:
+            continue
         # run tracking
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
@@ -74,7 +76,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 online_ids.append(tid)
         timer.toc()
         # save results
-        results.append((frame_id + 1, online_tlwhs, online_ids))
+        results.append((frame_id, online_tlwhs, online_ids))
         if show_image or save_dir is not None:
             online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                           fps=1. / timer.average_time)
@@ -82,7 +84,6 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imshow('online_im', online_im)
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
-        frame_id += 1
     # save results
     write_results(result_filename, results, data_type)
     return frame_id, timer.average_time, timer.calls
@@ -148,16 +149,27 @@ if __name__ == '__main__':
     opt.nms_thres = 0.4
     opt.num_classes = 1
 
+    # seqs_str = '''
+    #               2020-12-17-15-12-54-2-0-std
+    #               2020-12-17-15-12-54-2-1-std
+    #               2020-12-17-15-12-54-2-2-std
+    #               2020-12-17-15-12-54-1-2-0-std
+    #               2020-12-17-15-12-54-1-2-1-std
+    #            '''
+    # seqs_str = '''
+    #               2020-10-20-19-50-01-std
+    #            '''
     seqs_str = '''
-                  2020-10-20-19-50-01-std
-                  '''
-    data_root = os.path.join(opt.data_dir, 'd435i/images/2020-10-20/')
+                  2020-12-17-15-12-54-2-std
+                  2020-12-17-15-12-54-1-2-std
+               '''
+    data_root = os.path.join(opt.data_dir, 'd435i/images/2020-12-17/')
     seqs = [seq.strip() for seq in seqs_str.split()]
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='dla_tracker3d_2020-10-20',
+         exp_name='dla_tracker3d_2020-12-17',
          show_image=False,
          save_images=True,
-         save_videos=True)
+         save_videos=False)
     print(opt.num_classes)
