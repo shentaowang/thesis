@@ -41,11 +41,12 @@ def main():
                     uav0000355_00001_v
                     uav0000370_00001_v
     """
-    seqs = test_seqs_str
+    seqs = val_seqs_str
     data_type = 'mot'
     seqs = [seq.strip() for seq in seqs.split()]
-    data_root = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/testc5/"
-    out_path = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/results/kcf_tracker_1204"
+    data_root = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/valc5/"
+    # out_path = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/results/kcf_tracker_1204"
+    out_path = "/home/sdb/wangshentao/myspace/thesis/code/CenterTrack/exp/tracking/visdrone_fulltrain_v3/results_mot17val"
     accs = []
     for seq in seqs:
         evaluator = Evaluator(data_root, seq, data_type)
@@ -72,24 +73,42 @@ def cp_result_txt():
                       uav0000305_00000_v
                       uav0000339_00001_v
                     '''
-    seq = "uav0000182_00000_v"
-    track_file1 = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/results/" \
-                  "fcos_dlav3_1108_2_nms0.4_conf0.6_centerness"
+    test_seqs_str = """
+                    uav0000009_03358_v
+                    uav0000073_00600_v
+                    uav0000073_04464_v
+                    uav0000077_00720_v
+                    uav0000088_00290_v
+                    uav0000119_02301_v
+                    uav0000120_04775_v
+                    uav0000161_00000_v
+                    uav0000188_00000_v
+                    uav0000201_00000_v
+                    uav0000249_00001_v
+                    uav0000249_02688_v
+                    uav0000297_00000_v
+                    uav0000297_02761_v
+                    uav0000306_00230_v
+                    uav0000355_00001_v
+                    uav0000370_00001_v
+    """
+    seq = "uav0000120_04775_v"
+    track_file1 = "/home/sdb/wangshentao/myspace/thesis/code/CenterTrack/exp/tracking/visdrone_fulltrain/results_mot17test/"
     track_file1 = os.path.join(track_file1, seq+'.txt')
     track_file2 = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/results/" \
                   "fcos_dlav3_extend_refine_v2_1108_nms0.4_conf0.6"
     track_file2 = os.path.join(track_file2, seq + '.txt')
     track_file3 = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/annotations-c5/"
     track_file3 = os.path.join(track_file3, seq + '.txt')
-    image_file = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/val"
+    image_file = "/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/testc1"
     image_file = os.path.join(image_file, seq)
     track_data1 = read_results(track_file1, 'mot', False, False)
     track_data2 = read_results(track_file2, 'mot', False, False)
-    track_data3 = read_results(track_file3, 'mot', False, False)
-    for i in range(1, 100):
+    # track_data3 = read_results(track_file3, 'mot', False, False)
+    for i in range(100, 200):
         track_bbox1 = track_data1[i]
         track_bbox2 = track_data2[i]
-        track_bbox3 = track_data3[i]
+        # track_bbox3 = track_data3[i]
         print(len(track_bbox1), len(track_bbox2))
         image = cv2.imread(os.path.join(image_file, "{:0>7d}.jpg".format(i)))
         for bbox in track_bbox1:

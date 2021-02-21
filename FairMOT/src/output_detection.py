@@ -165,7 +165,7 @@ def main(
             for i in range(dets.shape[0]):
                 x, y, w, h, score = dets[i][0], dets[i][1], \
                                     dets[i][2] - dets[i][0], dets[i][3] - dets[i][1], dets[i][4]
-                fout.write("{}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}\n".format(frame, frame, x, y, w, h, score))
+                fout.write("{},{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(frame, '-1', x, y, w, h, score))
             #     cv2.rectangle(img0, (int(dets[i, 0]), int(dets[i, 1])),
             #                   (int(dets[i, 2]), int(dets[i, 3])), (0, 255, 0), 2)
             # plt.figure(figsize=(16, 9))
@@ -185,8 +185,8 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     opt = opts().init()
     opt.load_model = '../exp/mot/1204-fcos-litedla-576-b8/model_last.pth'
-    data_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/testc5/'
-    output_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-test-dev/detections-1204"
+    data_root = '/home/sdb/wangshentao/myspace/thesis/data/visdrone_2019_mot/images/valc5/'
+    output_dir = "/home/sdb/wangshentao/myspace/thesis/data/VisDrone2019-MOT-val/center-detections-1204"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     val_seqs_str = """
@@ -217,7 +217,65 @@ if __name__ == '__main__':
                     uav0000355_00001_v
                     uav0000370_00001_v
     """
-    seqs = test_seqs_str
+    train_seqs_str = """
+                    uav0000020_00406_v
+                    uav0000072_06432_v
+                    uav0000300_00000_v
+                    uav0000309_00000_v
+                    uav0000013_01073_v
+                    uav0000243_00001_v
+                    uav0000076_00720_v
+                    uav0000218_00001_v
+                    uav0000278_00001_v
+                    uav0000266_03598_v
+                    uav0000099_02109_v
+                    uav0000295_02300_v
+                    uav0000266_04830_v
+                    uav0000239_12336_v
+                    uav0000126_00001_v
+                    uav0000326_01035_v
+                    uav0000279_00001_v
+                    uav0000366_00001_v
+                    uav0000013_00000_v
+                    uav0000124_00944_v
+                    uav0000072_04488_v
+                    uav0000013_01392_v
+                    uav0000244_01440_v
+                    uav0000289_00001_v
+                    uav0000264_02760_v
+                    uav0000308_01380_v
+                    uav0000072_05448_v
+                    uav0000263_03289_v
+                    uav0000140_01590_v
+                    uav0000363_00001_v
+                    uav0000145_00000_v
+                    uav0000079_00480_v
+                    uav0000342_04692_v
+                    uav0000273_00001_v
+                    uav0000222_03150_v
+                    uav0000143_02250_v
+                    uav0000138_00000_v
+                    uav0000150_02310_v
+                    uav0000361_02323_v
+                    uav0000308_00000_v
+                    uav0000316_01288_v
+                    uav0000248_00001_v
+                    uav0000323_01173_v
+                    uav0000270_00001_v
+                    uav0000289_06922_v
+                    uav0000239_03720_v
+                    uav0000352_05980_v
+                    uav0000288_00001_v
+                    uav0000315_00000_v
+                    uav0000281_00460_v
+                    uav0000360_00001_v
+                    uav0000329_04715_v
+                    uav0000084_00000_v
+                    uav0000307_00000_v
+                    uav0000071_03240_v
+                    uav0000357_00920_v
+                     """
+    seqs = val_seqs_str
     seqs = [seq.strip() for seq in seqs.split()]
     with torch.no_grad():
         main(opt, data_root, seqs, output_dir, batch_size=1)
